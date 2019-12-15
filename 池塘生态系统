@@ -1,0 +1,332 @@
+#include<iostream>
+#include <graphics.h>		// EasyX_20190219(beta)
+#include <conio.h>
+#include <graphics.h>		// EasyX_20190219(beta)
+#include <conio.h>
+#include<ctime>
+#include <chrono> 
+#include<thread> //多线程 用到的类库
+#pragma comment( lib, "MSIMG32.LIB")
+int Littlefish = 2;
+unsigned int weedmember = 4;//水草
+int Time = 1; //////////////////////////////时间待定
+int oxy = 300;//////////////////////////////////氧气待定
+using namespace std;
+void transparentimage(int x, int y, IMAGE* srcimg, IMAGE* maskimg)
+{
+	putimage(x, y, maskimg, SRCAND);
+	putimage(x, y, srcimg, SRCPAINT);
+}
+/////////////////////////////////时间类/////////////////////////////////
+class date
+{
+public:
+	date(int newday,int newhour,int newmintue)
+	{
+		day =newday;
+		hour = newhour;
+		mintue = newmintue;
+	}
+	void time()
+	{
+		int t = 1;
+		while (t)
+		{
+			system("cls");
+
+			cout << hour << ":" << mintue << ":" << endl;
+			Sleep(1000);
+			mintue++;
+			while (mintue == 60)
+			{
+				hour++;
+				mintue = 0;
+			}
+			while (hour == 24)
+			{
+				day++;
+				hour = 0;
+			}
+			showtime();
+		}
+	}
+	void showtime()
+	{
+		outtextxy(200, 300, static_cast<char>(day));
+		outtextxy(200, 350, static_cast<char>(hour));
+		outtextxy(200, 400, static_cast<char>(mintue));
+	}
+	////////////////////一株水草///////////////////////////////////
+	double oxychange()
+	{
+		while (hour >= 6 && hour <= 7)
+		{
+			oxy += 0.20 * mintue;
+		}
+		while (hour > 7 && hour <= 8)
+		{
+			oxy += (12 + 0.15 * mintue);
+		}
+		while (hour > 8 && hour <= 9)
+		{
+			oxy += (24 + 0.15 * mintue);
+		}
+		while (hour >= 16 && hour <= 17)
+		{
+			oxy -= (26 + 0.15 * mintue);
+		}
+		while (hour > 17 && hour <= 18)
+		{
+			oxy -= (13 + 0.15 * mintue);
+		}
+		while (hour > 18 && hour <= 19)
+		{
+			oxy -= 0.15 * mintue;
+		}
+		outtextxy(900,800,oxy);
+		return oxy;
+	}
+private:
+	int day;
+	int hour;
+	int mintue;
+};
+
+//////////////////////////////////鲨鱼类//////////////////////////////
+class shark {
+public:
+	shark(float x1, float x2, float x3, float x4, float x5, float x6, float x7);
+	//////////////////是否死亡////////////////////////////////////
+	int ISDEAD() {
+		shark shark1(5, 5, 10, 10, 0, 0, 100);
+		if (Time >= shark1.LIFESPAN) {
+			return 0;
+		}
+	}
+
+	void move() {
+		shark shark1(rand() % 600, rand() % 400, 10, 10, 0, 0, 100);
+		do {
+			int temp = rand() % 10;     /////随机运动
+			if (temp > 5) {
+				shark1.DX = rand() % 30; shark1.DY = rand() % 30;
+			}
+			if (temp < 5) {
+				shark1.DX = (-2) * rand() % 30; shark1.DY = (-2) * rand() % 30;
+			}
+			shark1.X += shark1.DX; shark1.Y += shark1.DY;
+			///////////防止出界////////////
+			if (shark1.X > 600) { shark1.X -= 30; }
+			if (shark1.X < 0) { shark1.X += 30; }
+			if (shark1.Y > 400) { shark1.Y -= 30; }
+			if (shark1.Y < 0) { shark1.Y += 30; }
+			IMAGE src, mask;
+			loadimage(NULL, _T("D:\\海洋.jpg"));
+			loadimage(&src, _T("D:\\鱼原图.jpg"));
+			loadimage(&mask, _T("D:\\鱼掩码图.jpg"));
+			transparentimage(shark1.X, shark1.Y, &src, &mask);
+			Sleep(100);
+		} while (ISDEAD());
+	}
+
+
+
+
+public:float X; float Y; float DX; float DY; float DDX; float DDY;
+	  int LIFESPAN;
+
+};
+
+
+
+////构造函数
+shark::shark(float x1, float x2, float x3, float x4, float x5, float x6, float x7) {
+	X = x1; Y = x2; DX = x3; DY = x4; DDX = x5; DDY = x6;
+}
+/*
+void transparentimage(IMAGE* dstimg, int x, int y, IMAGE* srcimg, UINT transparentcolor)
+{
+	HDC dstDC = GetImageHDC(dstimg);
+	HDC srcDC = GetImageHDC(srcimg);
+	int w = srcimg->getwidth();
+	int h = srcimg->getheight();
+
+	// 使用 Windows GDI 函数实现透明位图
+	TransparentBlt(dstDC, x, y, w, h, srcDC, 0, 0, w, h, transparentcolor);
+}
+/*/
+
+class fish {
+public:
+	fish(float x, float y, float dx, float dy, float ddx, float ddy);
+	///////////////////判断是否死亡////////////////////////////////
+	int isdead(float sx, float sy, float lx, float ly,fish L) {
+		///大鱼碰见小鱼////
+
+		float gapx = sx - lx;
+		float gapy = sy - ly;
+		if (gapx < 10 && gapy < 10)
+		{
+			Littlefish--;
+			L.getx(1000);
+			L.gety(1000);
+			if (Littlefish == 0)
+			{
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
+		
+		////鱼寿终正寝////////////////
+		/*if (littlefish.lifespan > 100) {
+			return 1;
+		}/*/
+		///////鱼缺氧而亡//////
+		if (oxy < 20) {
+			return 1;
+		}
+	}
+	int ISdead(float sx, float sy, float lx, float ly, fish L) {
+		///大鱼碰见小鱼////
+
+		float gapx = sx - lx;
+		float gapy = sy - ly;
+		if (gapx < 30 && gapy < 30)
+		{
+			return 0;
+		}
+			else {
+				return 1;
+			}
+		}
+	void getx(float newx) {
+		x = newx;
+	}
+	void gety(float newy) {
+		y = newy;
+	}
+		////////////////////移动///////////////////////////////
+		void move() {
+			fish littlefish(rand() % 600, rand() % 400, 10, 10, 0, 0);
+			shark shark1(rand() % 600, rand() % 400, 10, 10, 0, 0, 100);
+
+
+
+			do {
+
+				int temp = rand() % 10; /////随机运动
+				for (int i = 0; i < 10; i++)
+				{
+					if (temp > 5) {
+						littlefish.dx = rand() % 20; littlefish.dy = rand() % 20;
+					}
+					if (temp <= 5) {
+						littlefish.dx = (-2) * rand() % 20; littlefish.dy = (-2) * rand() % 20;
+					}
+					littlefish.x += littlefish.dx; littlefish.y += littlefish.dy;
+					///////////防止出界////////////
+					if (littlefish.x > 600) { littlefish.x -= 30; }
+					if (littlefish.x < 0) { littlefish.x += 30; }
+					if (littlefish.y > 400) { littlefish.y -= 30; }
+					if (littlefish.y < 0) { littlefish.y += 30; }
+					loadimage(NULL, _T("D:\\海洋.jpg"));
+					if (ISdead(shark1.X, shark1.Y, littlefish.x, littlefish.y, littlefish))
+					{
+						IMAGE src, mask;
+						loadimage(&src, _T("D:\\小鱼原图.jpg"));
+						loadimage(&mask, _T("D:\\小鱼掩码图.jpg"));
+						transparentimage(littlefish.x, littlefish.y, &src, &mask);
+					}
+					int temp3 = rand() % 10;     /////随机运动
+					if (temp3 > 5) {
+						shark1.DX = rand() % 20; shark1.DY = rand() % 20;
+					}
+					if (temp3 <= 5) {
+						shark1.DX = (-2) * rand() % 20; shark1.DY = (-2) * rand() % 20;
+					}
+					shark1.X += shark1.DX; shark1.Y += shark1.DY;
+					///////////防止出界////////////
+					if (shark1.X > 600) { shark1.X -= 30; }
+					if (shark1.X < 0) { shark1.X += 30; }
+					if (shark1.Y > 400) { shark1.Y -= 30; }
+					if (shark1.Y < 0) { shark1.Y += 30; }
+					IMAGE src1, mask1;
+
+					loadimage(&src1, _T("D:\\鱼原图.jpg"));
+					loadimage(&mask1, _T("D:\\鱼掩码图.jpg"));
+					transparentimage(shark1.X, shark1.Y, &src1, &mask1);
+					Sleep(100);
+				}
+			} while (isdead(shark1.X, shark1.Y, littlefish.x, littlefish.y,littlefish));
+
+			move();
+		};
+
+		/////////////////////////死亡//////////////////////////
+		/*void fail() {
+			if (isdead()) {
+
+			}
+		}/*/
+
+
+
+
+
+public:    //基本属性
+	float x;
+	float y;
+	float dx;
+	float dy;
+	float ddx;
+	float ddy;
+	int lifespan;
+	};
+
+	
+
+
+
+	///////////////////////////////////构造函数////////////////////////////////////////+/
+	fish::fish(float X, float Y, float DX, float DY, float DDX, float DDY) {
+		x = X; y = Y; dx = DX; dy = DY; ddx = DDX; ddy = DDY;
+	}
+
+
+
+
+	///////////////////////////////////运行函数///////////////////////////////////////
+	void game() {
+		/*fish littlefish[2] = {
+			fish(5, 5, 0, 0, 0, 0),
+		fish(10, 10, 0, 0, 0, 0)
+		};
+		littlefish[0].move();
+		littlefish[1].move();/*/
+		shark shark1(200, 5, 10, 10, 0, 0, 100);
+		fish littlefish(200, 5, 10, 10, 0, 0);
+		date ecotime(0,6,0);
+		std::thread task01(&shark::move, shark1);
+		std::thread task02(&fish::move, littlefish);
+		std::thread task03(&date::time, ecotime);
+		task01.detach();
+		task02.detach();
+		task03.detach();
+		littlefish.move();
+
+	}
+
+
+	void main() {
+		srand((unsigned)time(NULL));
+		initgraph(1200, 1000); // 初始化图形窗口
+
+
+
+		game();    //运行
+		_getch();
+		closegraph();
+
+	}
